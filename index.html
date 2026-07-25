@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ziad El-Habashy | iFruit Portfolio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Outer Green iFruit Phone Frame -->
+  <div class="phone-frame">
+    
+    <!-- Top Bezel with Official Logo & Brand Name -->
+    <div class="top-bezel">
+      <!-- iFruit Fruit Bowl Logo -->
+      <svg width="18" height="18" viewBox="0 0 100 100" fill="white">
+        <!-- Bowl -->
+        <path d="M 10 50 A 40 40 0 0 0 90 50 Z" />
+        <!-- Left Fruit Dome -->
+        <path d="M 15 44 A 20 20 0 0 1 50 44 Z" />
+        <!-- Right Fruit Dome -->
+        <path d="M 52 44 A 18 18 0 0 1 85 44 Z" />
+        <!-- Curved Stem / Leaf -->
+        <path d="M 46 28 C 55 12 78 10 82 14 C 70 18 58 26 52 38 Z" />
+      </svg>
+      <span class="ifruit-logo">iFruit</span>
+    </div>
+
+    <!-- Screen Area -->
+    <div class="screen">
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <div class="status-left">
+          <div class="signal-dots">
+            <div class="signal-dot" style="height: 4px;"></div>
+            <div class="signal-dot" style="height: 6px;"></div>
+            <div class="signal-dot" style="height: 8px;"></div>
+            <div class="signal-dot" style="height: 10px;"></div>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="white" style="margin-left: 2px;">
+            <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+          </svg>
+          <span style="margin-left: 4px;">Wed</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="12" viewBox="0 0 24 12" fill="none" stroke="white" stroke-width="2">
+            <rect x="1" y="1" width="18" height="10" rx="1" />
+            <rect x="3" y="3" width="11" height="6" fill="white" />
+            <path d="M20 4v4" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span id="clock">11:59</span>
+        </div>
+      </div>
+
+      <!-- Main Homescreen View -->
+      <div class="main-view">
+        <h1 class="app-title" id="app-title">Contacts</h1>
+
+        <div class="grid">
+          <!-- Row 1 -->
+          <div class="tile" data-title="About Me" onclick="openApp('page-about')">
+            <svg width="38" height="38" viewBox="0 0 24 24" class="icon-white"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          </div>
+          <div class="tile" data-title="Experience" onclick="openApp('page-experience')">
+            <svg width="38" height="38" viewBox="0 0 24 24" class="icon-white"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+          </div>
+          <div class="tile" data-title="Projects" onclick="openApp('page-projects')">
+            <svg width="38" height="38" viewBox="0 0 24 24" class="icon-white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="tile" data-title="Education" onclick="openApp('page-education')">
+            <svg width="38" height="38" viewBox="0 0 24 24" class="icon-white"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+          </div>
+          <div class="tile" data-title="Contact Info" onclick="openApp('page-contact')">
+            <svg width="38" height="38" viewBox="0 0 24 24" class="icon-white"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1z"/></svg>
+          </div>
+          <div class="tile" data-title="Skills" onclick="openApp('page-skills')">
+            <svg width="38" height="38" viewBox="0 0 24 24" class="icon-white" transform="rotate(45)"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.4-2.4c.4-.4.4-1 0-1.3z"/></svg>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="tile camera-tile" data-title="Creative Media" onclick="openApp('page-media')">
+            <div class="camera-inner">
+              <div class="camera-body">
+                <div class="camera-stripe"></div>
+                <div class="camera-flash"></div>
+                <div class="camera-lens-outer">
+                  <div class="camera-lens-inner"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tile" data-title="Languages" onclick="openApp('page-web')">
+            <svg width="38" height="38" viewBox="0 0 24 24" class="icon-white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          </div>
+          <div class="tile empty"></div>
+        </div>
+      </div>
+
+      <!-- INSIDE APP PAGES -->
+      <div id="page-about" class="app-page">
+        <div class="page-header">About Me</div>
+        <div class="page-content">
+          <div class="info-card">
+            <div class="card-title">Ziad El-Habashy</div>
+            <div class="card-sub">Odoo & Software Developer</div>
+            <p>Computer Science Junior at Misr International University with experience in Odoo ERP development, module customization (Python, XML, PostgreSQL), and backend logic execution[cite: 1].</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-experience" class="app-page">
+        <div class="page-header">Work Experience</div>
+        <div class="page-content">
+          <div class="info-card">
+            <div class="card-title">FlexCode Systems</div>
+            <div class="card-sub">Odoo Developer Intern (Jun - Jul 2026)</div>
+            <p>• Customizing Odoo ERP modules (Python, XML, PostgreSQL)[cite: 1].<br>• Cleansed 3000+ duplicate contacts using pandas[cite: 1].<br>• Fixed Odoo.sh inheritance bugs[cite: 1].</p>
+          </div>
+          <div class="info-card">
+            <div class="card-title">CIB Bank</div>
+            <div class="card-sub">Summer Intern (May 2026)</div>
+            <p>• Explored Generative AI & Fintech applications in banking[cite: 1].</p>
+          </div>
+          <div class="info-card">
+            <div class="card-title">KRAFT Sportswear</div>
+            <div class="card-sub">Shopify Developer (2025 - Present)</div>
+            <p>• Storefront maintenance & built AI logo compositing script with Python Pillow[cite: 1].</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-projects" class="app-page">
+        <div class="page-header">Academic Projects</div>
+        <div class="page-content">
+          <div class="info-card">
+            <div class="card-title">E-Commerce Website</div>
+            <div class="card-sub">Node.js / MongoDB / JS</div>
+            <p>Full-stack web application with cart and authentication[cite: 1].</p>
+          </div>
+          <div class="info-card">
+            <div class="card-title">Recruitment System</div>
+            <div class="card-sub">Java (OOP)</div>
+            <p>Role-based management system for candidates[cite: 1].</p>
+          </div>
+          <div class="info-card">
+            <div class="card-title">Graph Traversal Engine</div>
+            <div class="card-sub">C++</div>
+            <p>BFS & DFS algorithms implementation[cite: 1].</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Education App Page (Updated with High School & University) -->
+      <div id="page-education" class="app-page">
+        <div class="page-header">Education</div>
+        <div class="page-content">
+          <div class="info-card">
+            <div class="card-title">Misr International University (MIU)</div>
+            <div class="card-sub">Bachelor of Computer Science</div>
+            <p>2024 - Present[cite: 1]</p>
+          </div>
+          <div class="info-card">
+            <div class="card-title">Thanawia Amma</div>
+            <div class="card-sub">High School Graduation</div>
+            <p>Graduated 2024[cite: 1]</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-contact" class="app-page">
+        <div class="page-header">Contact Info</div>
+        <div class="page-content">
+          <div class="info-card">
+            <p><b>📍 Location:</b> Cairo, Egypt[cite: 1]</p>
+            <p style="margin-top: 6px;"><b>📧 Email:</b> ziadelhabashy5@gmail.com[cite: 1]</p>
+            <p style="margin-top: 6px;"><b>📞 Phone:</b> +20 11 1817 2555[cite: 1]</p>
+            <p style="margin-top: 6px;"><b>🔗 LinkedIn:</b> ziadelhabashy[cite: 1]</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-skills" class="app-page">
+        <div class="page-header">Skills</div>
+        <div class="page-content">
+          <div class="info-card">
+            <div class="card-title">Languages & Tools</div>
+            <div style="margin-top:6px;">
+              <span class="tag">Python</span>
+              <span class="tag">Java</span>
+              <span class="tag">C++</span>
+              <span class="tag">SQL</span>
+              <span class="tag">Odoo ERP</span>
+              <span class="tag">PostgreSQL</span>
+              <span class="tag">Git</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-media" class="app-page">
+        <div class="page-header">Creative & Tools</div>
+        <div class="page-content">
+          <div class="info-card">
+            <div class="card-title">Content Pipeline</div>
+            <p style="margin-top:5px;">AI workflows using Pillow, Seedance, Higgsfield, and CapCut for automated processing[cite: 1].</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-web" class="app-page">
+        <div class="page-header">Web & Languages</div>
+        <div class="page-content">
+          <div class="info-card">
+            <div class="card-title">Spoken Languages</div>
+            <p>• Arabic (Mother tongue)[cite: 1]<br>• English (Excellent)[cite: 1]</p>
+          </div>
+          <div class="info-card">
+            <div class="card-title">Frontend Stack</div>
+            <p>HTML, CSS, JS, React, Angular, Vue.js[cite: 1]</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- In-Screen Bottom Bar -->
+      <div class="screen-bottom-bar">
+        <button class="screen-btn" onclick="closeApp()" title="Home Screen">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#5cdb5c">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+        </button>
+        <button class="screen-btn" onclick="closeApp()" title="Back">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#ff4d4d">
+            <path d="M12.5 8c-2.65 0-5.05 1-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
+          </svg>
+        </button>
+      </div>
+
+    </div> <!-- End Screen -->
+
+    <!-- Physical Hardware Bezel Buttons -->
+    <div class="hardware-buttons">
+      <!-- Search Button -->
+      <button class="hw-btn" title="Search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#aaaaaa" stroke-width="2.5">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="16.5" y1="16.5" x2="22" y2="22"/>
+        </svg>
+      </button>
+
+      <!-- Center iFruit Bowl Hardware Button -->
+      <button class="hw-btn hw-logo" onclick="closeApp()" title="Home">
+        <svg width="22" height="22" viewBox="0 0 100 100" fill="#aaaaaa">
+          <path d="M 10 50 A 40 40 0 0 0 90 50 Z" />
+          <path d="M 15 44 A 20 20 0 0 1 50 44 Z" />
+          <path d="M 52 44 A 18 18 0 0 1 85 44 Z" />
+          <path d="M 46 28 C 55 12 78 10 82 14 C 70 18 58 26 52 38 Z" />
+        </svg>
+      </button>
+
+      <!-- Back Arrow Hardware Button -->
+      <button class="hw-btn" onclick="closeApp()" title="Back">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#aaaaaa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+      </button>
+    </div>
+
+  </div> <!-- End Phone Frame -->
+
+  <script src="script.js"></script>
+</body>
+</html>

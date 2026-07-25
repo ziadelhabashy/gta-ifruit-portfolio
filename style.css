@@ -1,0 +1,353 @@
+@font-face {
+  font-family: 'HelveticaNeue-Bold';
+  src: local('Helvetica Neue Bold'), local('Helvetica-Bold'), local('Arial Bold');
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  background-color: #0b0b0b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Outer Green iFruit Phone Frame */
+.phone-frame {
+  width: 325px;
+  height: 610px;
+  background-color: #121212;
+  border: 7px solid #48b02c;
+  border-radius: 40px;
+  box-shadow: 0 0 0 2px #266315, 0 20px 50px rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  padding: 6px;
+}
+
+/* Top Bezel Area */
+.top-bezel {
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  background-color: #121212;
+}
+
+.ifruit-logo {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  font-family: 'HelveticaNeue-Bold', Arial, sans-serif;
+}
+
+/* Screen Area */
+.screen {
+  background-color: #000000;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 14px 0 14px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+/* Status Bar */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  padding-top: 2px;
+  letter-spacing: 0.2px;
+  z-index: 10;
+}
+
+.status-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.signal-dots {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+}
+
+.signal-dot {
+  width: 3px;
+  background-color: #fff;
+}
+
+/* App Header Title */
+.app-title {
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 700;
+  margin-top: 6px;
+  margin-bottom: 20px;
+  letter-spacing: -0.5px;
+  font-family: Arial, sans-serif;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+/* Main View Wrapper */
+.main-view {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* Icons Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.tile {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #b70000;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s;
+}
+
+.tile:hover {
+  background-color: #e60000;
+}
+
+.tile:active {
+  transform: scale(0.95);
+}
+
+/* Custom Camera Icon Box */
+.tile.camera-tile {
+  background: #f7d242;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.camera-inner {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, #ffffff 0%, #ffffff 48%, #e1af28 49%, #e1af28 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.camera-body {
+  width: 54px;
+  height: 54px;
+  background: #f0e6d2;
+  border: 2px solid #333;
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 0 2px rgba(0,0,0,0.3);
+}
+
+.camera-stripe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: linear-gradient(to right, #2b82c5 0%, #2b82c5 25%, #d93933 25%, #d93933 50%, #f1a533 50%, #f1a533 75%, #60a846 75%);
+  border-top-left-radius: 9px;
+  border-top-right-radius: 9px;
+}
+
+.camera-lens-outer {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #222;
+  border: 2px solid #dcd3c1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+.camera-lens-inner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #68b8f7 0%, #082d4a 70%);
+}
+
+.camera-flash {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #444;
+  border: 1px solid #111;
+}
+
+.tile.empty {
+  background-color: transparent;
+  cursor: default;
+}
+
+/* Sub-pages / App Views Inside Screen - Pure Black Background */
+.app-page {
+  position: absolute;
+  top: 30px;
+  left: 0;
+  right: 0;
+  bottom: 40px;
+  background-color: #000000;
+  color: #fff;
+  padding: 12px;
+  overflow-y: auto;
+  display: none;
+  flex-direction: column;
+  z-index: 20;
+}
+
+.app-page.active {
+  display: flex;
+}
+
+.page-header {
+  font-size: 19px;
+  font-weight: 700;
+  color: #b70000;
+  border-bottom: 1px solid #1a1a1a;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.page-content {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #ddd;
+}
+
+/* Card Styling - Black Theme */
+.info-card {
+  background-color: #000000;
+  border: 1px solid #1f1f1f;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-weight: bold;
+  color: #fff;
+  font-size: 14px;
+}
+
+.card-sub {
+  color: #b70000;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.tag {
+  display: inline-block;
+  background: #111;
+  border: 1px solid #222;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  margin: 2px;
+  color: #ccc;
+}
+
+/* In-Screen Bottom Bar */
+.screen-bottom-bar {
+  border-top: 1px solid #111111;
+  margin-top: auto;
+  padding: 6px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 36px;
+  background-color: #000;
+  z-index: 30;
+}
+
+.screen-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.15s ease;
+}
+
+.screen-btn:active {
+  transform: scale(0.85);
+}
+
+/* Hardware Physical Buttons */
+.hardware-buttons {
+  height: 42px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #121212;
+  padding: 0 10px;
+}
+
+.hw-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.hw-btn:hover {
+  opacity: 0.8;
+}
+
+.hw-btn:active {
+  transform: scale(0.9);
+}
+
+.app-page::-webkit-scrollbar {
+  width: 4px;
+}
+.app-page::-webkit-scrollbar-thumb {
+  background: #222;
+  border-radius: 2px;
+}
+
+.icon-white { fill: #ffffff; }
+.icon-red { fill: #b70000; }
