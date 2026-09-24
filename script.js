@@ -23,10 +23,35 @@ tiles.forEach(tile => {
   });
 });
 
-// iFruit notification sound (muted state remembered per visitor)
-const tapSound = new Audio('assets/sounds/ifruit-tap.mp3?v=2');
-tapSound.preload = 'auto';
-tapSound.volume = 0.6;
+// ---------- Sounds ----------
+// Web Audio instead of <audio> tags: phones (iPhone Safari especially) only
+// allow sound after a real tap, and <audio> tags lag on iOS. The unlock tap
+// switches the audio context on once; after that both sounds play instantly.
+const SOUNDS = {
+  notif: { url: 'assets/sounds/ifruit-tap.mp3?v=2', offset: 0.06 },
+  touch: { url: 'assets/sounds/touch.mp3?v=2', offset: 0.07 },
+};
+const SOUND_VOLUME = 0.6;
+
+// let iPhones play site audio even when the ring/silent switch is on silent
+try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const audioCtx = AudioCtx ? new AudioCtx() : null;
+const soundBuffers = {};
+
+function loadSound(name) {
+  return fetch(SOUNDS[name].url)
+    .then(res => res.arrayBuffer())
+    // callback form of decodeAudioData so older Safari works too
+    .then(data => new Promise((ok, fail) => audioCtx.decodeAudioData(data, ok, fail)))
+    .then(buffer => { soundBuffers[name] = buffer; })
+    .catch(() => {});
+}
+
+const soundsReady = audioCtx
+  ? Promise.all(Object.keys(SOUNDS).map(loadSound))
+  : Promise.resolve();
 
 let soundMuted = false;
 try { soundMuted = localStorage.getItem('ifruit-muted') === '1'; } catch (e) {}
@@ -39,12 +64,6 @@ function renderSoundToggle() {
   btn.setAttribute('aria-label', label);
 }
 
-function playTap() {
-  if (soundMuted) return Promise.resolve();
-  tapSound.currentTime = 0.06;
-  return tapSound.play();
-}
-
 function toggleSound() {
   soundMuted = !soundMuted;
   try { localStorage.setItem('ifruit-muted', soundMuted ? '1' : '0'); } catch (e) {}
@@ -53,25 +72,25 @@ function toggleSound() {
 
 renderSoundToggle();
 
-// Touch sound for the 9 app tiles and the home/back buttons (on screen and
-// on the phone bezel). Starts slightly in to skip the MP3's built-in padding.
-const touchSound = new Audio('assets/sounds/touch.mp3?v=2');
-touchSound.preload = 'auto';
-touchSound.volume = 0.6;
-
-function playTouch() {
-  if (soundMuted) return;
-  touchSound.currentTime = 0.07;
-  touchSound.play().catch(() => {});
+function playSound(name) {
+  if (soundMuted || !audioCtx || !soundBuffers[name]) return;
+  if (audioCtx.state !== 'running') audioCtx.resume();
+  const src = audioCtx.createBufferSource();
+  const gain = audioCtx.createGain();
+  src.buffer = soundBuffers[name];
+  gain.gain.value = SOUND_VOLUME;
+  src.connect(gain);
+  gain.connect(audioCtx.destination);
+  src.start(0, SOUNDS[name].offset);
 }
 
+// Touch sound for the 9 app tiles and the home/back buttons (on screen and
+// on the phone bezel)
 document.querySelectorAll('.tile[data-title], .screen-btn, .hw-btn[onclick]').forEach(el => {
-  el.addEventListener('pointerdown', playTouch);
+  el.addEventListener('pointerdown', () => playSound('touch'));
 });
 
-// Welcome text notification, shown together with its sound when the visitor
-// unlocks the phone. Browsers only allow sound after a tap, so the unlock tap
-// is what makes the sound play at the same moment as the notification.
+// Welcome text notification, shown together with its sound on unlock
 const welcome = document.getElementById('welcome-notif');
 let welcomeTimer;
 
@@ -83,7 +102,7 @@ function hideWelcome() {
 function showWelcome() {
   welcome.classList.add('show');
   welcomeTimer = setTimeout(hideWelcome, 9000);
-  playTap().catch(() => {});
+  playSound('notif');
 }
 
 welcome.addEventListener('click', hideWelcome);
@@ -100,8 +119,20 @@ syncLockTime();
 setInterval(syncLockTime, 1000);
 
 lockScreen.addEventListener('click', () => {
+  // must happen inside the tap itself, or phones keep audio blocked; older
+  // iPhones also need something to actually play, so start a silent blip
+  if (audioCtx) {
+    if (audioCtx.state !== 'running') audioCtx.resume();
+    const blip = audioCtx.createBufferSource();
+    blip.buffer = audioCtx.createBuffer(1, 1, 22050);
+    blip.connect(audioCtx.destination);
+    blip.start(0);
+  }
   lockScreen.classList.add('unlocked');
-  showWelcome();
+  // on a slow connection wait (briefly) for the sounds, so the notification
+  // and its sound still arrive together
+  const timeout = new Promise(ok => setTimeout(ok, 1500));
+  Promise.race([soundsReady, timeout]).then(showWelcome);
 }, { once: true });
 lockScreen.focus();
 
