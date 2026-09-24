@@ -23,6 +23,28 @@ tiles.forEach(tile => {
   });
 });
 
+// ---------- Debug panel (open the site with ?debug=1) ----------
+// Shows what the browser's audio is doing, to diagnose sound issues on phones.
+const DEBUG = new URLSearchParams(location.search).has('debug');
+let debugPanel = null;
+function dbg(msg) {
+  if (!DEBUG) return;
+  if (!debugPanel) {
+    debugPanel = document.createElement('pre');
+    debugPanel.style.cssText = 'position:fixed;left:0;right:0;top:0;max-height:32vh;overflow:hidden;margin:0;pointer-events:none;' +
+      'padding:6px 8px;background:rgba(0,0,0,.88);color:#7CFC9A;font:11px/1.35 monospace;z-index:99999;white-space:pre-wrap;';
+    document.body.appendChild(debugPanel);
+  }
+  const t = (performance.now() / 1000).toFixed(2);
+  debugPanel.textContent += t + 's  ' + msg + '\n';
+  debugPanel.scrollTop = debugPanel.scrollHeight;
+}
+if (DEBUG) {
+  window.addEventListener('error', e => dbg('ERROR ' + e.message));
+  window.addEventListener('unhandledrejection', e => dbg('REJECTED ' + (e.reason && e.reason.message || e.reason)));
+  dbg(navigator.userAgent);
+}
+
 // ---------- Sounds ----------
 // Web Audio instead of <audio> tags: phones (iPhone Safari especially) only
 // allow sound after a real tap, and <audio> tags lag on iOS. The unlock tap
@@ -41,14 +63,20 @@ try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } ca
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const audioCtx = AudioCtx ? new AudioCtx() : null;
 const soundBuffers = {};
+dbg('Web Audio: ' + (audioCtx ? 'yes, state=' + audioCtx.state : 'NOT SUPPORTED') +
+    ' | audioSession: ' + (navigator.audioSession ? navigator.audioSession.type : 'not supported'));
+if (audioCtx) audioCtx.onstatechange = () => dbg('audio state -> ' + audioCtx.state);
 
 function loadSound(name) {
   return fetch(SOUNDS[name].url)
     .then(res => res.arrayBuffer())
     // callback form of decodeAudioData so older Safari works too
     .then(data => new Promise((ok, fail) => audioCtx.decodeAudioData(data, ok, fail)))
-    .then(buffer => { soundBuffers[name] = buffer; })
-    .catch(() => {});
+    .then(buffer => {
+      soundBuffers[name] = buffer;
+      dbg('loaded ' + name + ' (' + buffer.duration.toFixed(2) + 's)');
+    })
+    .catch(err => dbg('LOAD FAILED ' + name + ': ' + (err && err.message || err)));
 }
 
 const soundsReady = audioCtx
@@ -79,10 +107,14 @@ function playWithAudioTag(name) {
   const tag = new Audio(SOUNDS[name].url);
   tag.volume = SOUND_VOLUME;
   tag.currentTime = SOUNDS[name].offset;
-  tag.play().catch(() => {});
+  tag.play()
+    .then(() => dbg('played ' + name + ' via <audio> backup'))
+    .catch(err => dbg('<audio> backup BLOCKED ' + name + ': ' + (err && err.message || err)));
 }
 
 function playSound(name) {
+  dbg('play ' + name + ' | muted=' + soundMuted + ' | audio state=' + (audioCtx ? audioCtx.state : 'none') +
+      ' | loaded=' + !!soundBuffers[name]);
   if (soundMuted) return;
   if (!audioCtx || !soundBuffers[name]) {
     playWithAudioTag(name);
@@ -102,7 +134,7 @@ function playSound(name) {
   // audio can still be waking up right after the unlock; wait for it rather
   // than dropping the sound
   if (audioCtx.state === 'running') start();
-  else audioCtx.resume().then(start).catch(() => {});
+  else audioCtx.resume().then(start).catch(err => dbg('resume BLOCKED: ' + (err && err.message || err)));
 }
 
 // Touch sound for the 9 app tiles and the home/back buttons (on screen and
@@ -131,10 +163,8 @@ LOCK_CALLS.forEach((call, i) => {
   lockNotifs.appendChild(row);
 });
 
-// Inside, after unlocking: the welcome text, then a missed call from Google.
-// Tap either to dismiss it.
+// Inside, after unlocking: the welcome notification. Tap it to dismiss it.
 const welcome = document.getElementById('welcome-notif');
-const googleCall = document.getElementById('call-google');
 
 function showNotif(el) {
   el.classList.remove('leaving');
@@ -150,15 +180,10 @@ function hideNotif(el) {
 function showWelcome() {
   showNotif(welcome);
   playSound('notif');
-  setTimeout(() => {
-    showNotif(googleCall);
-    playSound('notif');
-  }, 1200);
   setTimeout(() => hideNotif(welcome), 9000);
-  setTimeout(() => hideNotif(googleCall), 9150);
 }
 
-[welcome, googleCall].forEach(el => el.addEventListener('click', () => hideNotif(el)));
+welcome.addEventListener('click', () => hideNotif(welcome));
 
 // Lock screen: drag the knob to the end of the track to unlock
 const lockScreen = document.getElementById('lock-screen');
@@ -178,7 +203,8 @@ setInterval(syncLockClock, 1000);
 
 // has to run inside the gesture itself, or phones keep audio blocked; older
 // iPhones also need something to actually play, so start a silent blip
-function unlockAudio() {
+function unlockAudio(e) {
+  dbg('gesture ' + (e && e.type || 'unlock') + ' | audio state=' + (audioCtx ? audioCtx.state : 'none'));
   if (!audioCtx) return;
   if (audioCtx.state !== 'running') audioCtx.resume();
   const blip = audioCtx.createBufferSource();
@@ -193,6 +219,12 @@ function unlockPhone() {
   unlocked = true;
   unlockAudio();
   lockScreen.classList.add('unlocked');
+  // iPhones only allow sound that starts inside the gesture itself, so if the
+  // sound is loaded, show the notification (and start its sound) right now
+  if (soundBuffers.notif) {
+    showWelcome();
+    return;
+  }
   // on a slow connection wait (briefly) for the sounds, so the notification
   // and its sound still arrive together
   const timeout = new Promise(ok => setTimeout(ok, 1500));
