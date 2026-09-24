@@ -27,9 +27,11 @@ tiles.forEach(tile => {
 // Web Audio instead of <audio> tags: phones (iPhone Safari especially) only
 // allow sound after a real tap, and <audio> tags lag on iOS. The unlock tap
 // switches the audio context on once; after that both sounds play instantly.
+// Untrimmed original files (trimmed MP3s wouldn't decode on iPhone); the
+// silence before each sound is skipped here instead with offset/duration.
 const SOUNDS = {
-  notif: { url: 'assets/sounds/ifruit-tap.mp3?v=2', offset: 0.06 },
-  touch: { url: 'assets/sounds/touch.mp3?v=2', offset: 0.07 },
+  notif: { url: 'assets/sounds/ifruit-tap.mp3?v=3', offset: 0.19 },
+  touch: { url: 'assets/sounds/touch.mp3?v=3', offset: 0.59, duration: 0.2 },
 };
 const SOUND_VOLUME = 0.6;
 
@@ -72,16 +74,35 @@ function toggleSound() {
 
 renderSoundToggle();
 
+// backup for browsers that can't decode a file with Web Audio
+function playWithAudioTag(name) {
+  const tag = new Audio(SOUNDS[name].url);
+  tag.volume = SOUND_VOLUME;
+  tag.currentTime = SOUNDS[name].offset;
+  tag.play().catch(() => {});
+}
+
 function playSound(name) {
-  if (soundMuted || !audioCtx || !soundBuffers[name]) return;
-  if (audioCtx.state !== 'running') audioCtx.resume();
-  const src = audioCtx.createBufferSource();
-  const gain = audioCtx.createGain();
-  src.buffer = soundBuffers[name];
-  gain.gain.value = SOUND_VOLUME;
-  src.connect(gain);
-  gain.connect(audioCtx.destination);
-  src.start(0, SOUNDS[name].offset);
+  if (soundMuted) return;
+  if (!audioCtx || !soundBuffers[name]) {
+    playWithAudioTag(name);
+    return;
+  }
+  const start = () => {
+    const src = audioCtx.createBufferSource();
+    const gain = audioCtx.createGain();
+    src.buffer = soundBuffers[name];
+    gain.gain.value = SOUND_VOLUME;
+    src.connect(gain);
+    gain.connect(audioCtx.destination);
+    const { offset, duration } = SOUNDS[name];
+    if (duration) src.start(0, offset, duration);
+    else src.start(0, offset);
+  };
+  // audio can still be waking up right after the unlock; wait for it rather
+  // than dropping the sound
+  if (audioCtx.state === 'running') start();
+  else audioCtx.resume().then(start).catch(() => {});
 }
 
 // Touch sound for the 9 app tiles and the home/back buttons (on screen and
@@ -215,8 +236,12 @@ function endDrag(e) {
 }
 sliderKnob.addEventListener('pointerup', endDrag);
 sliderKnob.addEventListener('pointercancel', endDrag);
-// iPhones count touchend (not pointerup) as the gesture that allows audio
-sliderKnob.addEventListener('touchend', () => { if (unlocked) unlockAudio(); });
+// Phones differ on which part of a gesture allows audio (iPhones want
+// touchend, which can fire before or after pointerup), so switch it on at
+// every stage of the slide; unlockAudio is harmless to repeat
+['pointerdown', 'touchstart', 'touchend', 'pointerup'].forEach(type => {
+  sliderKnob.addEventListener(type, unlockAudio, { passive: true });
+});
 
 // keyboard: Enter or Space unlocks
 lockScreen.tabIndex = 0;
