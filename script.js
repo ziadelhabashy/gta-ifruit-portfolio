@@ -49,11 +49,12 @@ if (DEBUG) {
 // Web Audio instead of <audio> tags: phones (iPhone Safari especially) only
 // allow sound after a real tap, and <audio> tags lag on iOS. The unlock tap
 // switches the audio context on once; after that both sounds play instantly.
-// Untrimmed original files (trimmed MP3s wouldn't decode on iPhone); the
-// silence before each sound is skipped here instead with offset/duration.
+// Untrimmed original files (trimmed MP3s wouldn't decode on iPhone). Offsets
+// are measured so playback starts right at the sound, skipping the hiss before
+// it; the touch recording is noisy throughout, so only the tap itself is kept.
 const SOUNDS = {
-  notif: { url: 'assets/sounds/ifruit-tap.mp3?v=3', offset: 0.19 },
-  touch: { url: 'assets/sounds/touch.mp3?v=3', offset: 0.59, duration: 0.2 },
+  notif: { url: 'assets/sounds/ifruit-tap.mp3?v=3', offset: 0.208 },
+  touch: { url: 'assets/sounds/touch.mp3?v=3', offset: 0.605, duration: 0.06 },
 };
 const SOUND_VOLUME = 0.6;
 
@@ -124,12 +125,18 @@ function playSound(name) {
     const src = audioCtx.createBufferSource();
     const gain = audioCtx.createGain();
     src.buffer = soundBuffers[name];
-    gain.gain.value = SOUND_VOLUME;
     src.connect(gain);
     gain.connect(audioCtx.destination);
     const { offset, duration } = SOUNDS[name];
-    if (duration) src.start(0, offset, duration);
-    else src.start(0, offset);
+    const length = duration || (src.buffer.duration - offset);
+    // tiny fade in/out so cutting into the recording doesn't click
+    const now = audioCtx.currentTime;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(SOUND_VOLUME, now + 0.004);
+    gain.gain.setValueAtTime(SOUND_VOLUME, now + Math.max(0.005, length - 0.02));
+    gain.gain.linearRampToValueAtTime(0, now + length);
+    if (duration) src.start(now, offset, duration);
+    else src.start(now, offset);
   };
   // audio can still be waking up right after the unlock; wait for it rather
   // than dropping the sound
