@@ -90,12 +90,30 @@ document.querySelectorAll('.tile[data-title], .screen-btn, .hw-btn[onclick]').fo
   el.addEventListener('pointerdown', () => playSound('touch'));
 });
 
-// Notifications on unlock: the welcome text first, then missed calls slide in
-// one after another underneath. Tap any of them to dismiss it.
+// Missed calls waiting on the lock screen
+const LOCK_CALLS = [
+  { name: 'Siemens', avatar: 'S', bg: '#009999', fg: '#fff' },
+  { name: 'Valeo', avatar: 'V', bg: '#82e600', fg: '#1b1b1b' },
+  { name: 'PwC', avatar: 'pwc', bg: '#d04a02', fg: '#fff' },
+  { name: 'Deloitte', avatar: 'D<span class="call-dot"></span>', bg: '#000', fg: '#fff' },
+];
+
+const lockNotifs = document.getElementById('lock-notifs');
+LOCK_CALLS.forEach((call, i) => {
+  const row = document.createElement('div');
+  row.className = 'lock-notif';
+  row.style.animationDelay = (0.4 + i * 0.35) + 's';
+  row.innerHTML =
+    '<div class="call-avatar" style="background:' + call.bg + ';color:' + call.fg + ';">' + call.avatar + '</div>' +
+    '<div class="lock-notif-text"><b>' + call.name + '</b><span>Missed Call</span></div>' +
+    '<span class="lock-notif-time">now</span>';
+  lockNotifs.appendChild(row);
+});
+
+// Inside, after unlocking: the welcome text, then a missed call from Google.
+// Tap either to dismiss it.
 const welcome = document.getElementById('welcome-notif');
-const callNotifs = [...document.querySelectorAll('.notif-call:not(#call-google)')];
 const googleCall = document.getElementById('call-google');
-const notifTimers = [];
 
 function showNotif(el) {
   el.classList.remove('leaving');
@@ -108,53 +126,18 @@ function hideNotif(el) {
   setTimeout(() => el.classList.remove('show', 'leaving'), 300);
 }
 
-// Two layouts for the missed calls, picked by the link:
-//   default        -> calls pop up after unlocking, under the welcome text
-//   ?calls=lock    -> calls are already listed on the lock screen
-const callsOnLock = new URLSearchParams(location.search).get('calls') === 'lock';
-
-if (callsOnLock) {
-  const list = document.getElementById('lock-notifs');
-  callNotifs.forEach((el, i) => {
-    const row = document.createElement('div');
-    row.className = 'lock-notif';
-    row.style.animationDelay = (0.4 + i * 0.35) + 's';
-    row.innerHTML =
-      el.querySelector('.call-avatar').outerHTML +
-      '<div class="lock-notif-text"><b>' + el.querySelector('.notif-name').textContent +
-      '</b><span>Missed Call</span></div><span class="lock-notif-time">now</span>';
-    list.appendChild(row);
-  });
-  list.hidden = false;
-}
-
 function showWelcome() {
   showNotif(welcome);
   playSound('notif');
-  if (callsOnLock) {
-    // the other calls are on the lock screen; inside, only Google calls
-    notifTimers.push(setTimeout(() => {
-      showNotif(googleCall);
-      playSound('notif');
-    }, 1200));
-    notifTimers.push(setTimeout(() => hideNotif(welcome), 9000));
-    notifTimers.push(setTimeout(() => hideNotif(googleCall), 9150));
-    return;
-  }
-  callNotifs.forEach((el, i) => {
-    notifTimers.push(setTimeout(() => {
-      showNotif(el);
-      playSound('notif');
-    }, 1200 + i * 900));
-  });
-  // clear them all a while after the last call arrives, oldest first
-  const clearAt = 1200 + callNotifs.length * 900 + 6000;
-  [welcome, ...callNotifs].forEach((el, i) => {
-    notifTimers.push(setTimeout(() => hideNotif(el), clearAt + i * 150));
-  });
+  setTimeout(() => {
+    showNotif(googleCall);
+    playSound('notif');
+  }, 1200);
+  setTimeout(() => hideNotif(welcome), 9000);
+  setTimeout(() => hideNotif(googleCall), 9150);
 }
 
-[welcome, googleCall, ...callNotifs].forEach(el => el.addEventListener('click', () => hideNotif(el)));
+[welcome, googleCall].forEach(el => el.addEventListener('click', () => hideNotif(el)));
 
 // Lock screen: drag the knob to the end of the track to unlock
 const lockScreen = document.getElementById('lock-screen');

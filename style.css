@@ -632,7 +632,7 @@ body {
   .slider-text { animation: none; color: #cfcfcf; background: none; }
 }
 
-/* Missed calls listed on the lock screen (?calls=lock) */
+/* Missed calls listed on the lock screen */
 .lock-notifs {
   position: relative;
   margin: 10px 8px 0;
@@ -641,7 +641,6 @@ body {
   background: rgba(20, 28, 32, 0.62);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
-.lock-notifs[hidden] { display: none; }
 .lock-notif {
   display: flex;
   align-items: center;
