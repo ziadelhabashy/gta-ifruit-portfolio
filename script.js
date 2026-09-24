@@ -143,26 +143,6 @@ document.querySelectorAll('.tile[data-title], .screen-btn, .hw-btn[onclick]').fo
   el.addEventListener('pointerdown', () => playSound('touch'));
 });
 
-// Missed calls waiting on the lock screen
-const LOCK_CALLS = [
-  { name: 'Siemens', avatar: 'S', bg: '#009999', fg: '#fff' },
-  { name: 'Valeo', avatar: 'V', bg: '#82e600', fg: '#1b1b1b' },
-  { name: 'PwC', avatar: 'pwc', bg: '#d04a02', fg: '#fff' },
-  { name: 'Deloitte', avatar: 'D<span class="call-dot"></span>', bg: '#000', fg: '#fff' },
-];
-
-const lockNotifs = document.getElementById('lock-notifs');
-LOCK_CALLS.forEach((call, i) => {
-  const row = document.createElement('div');
-  row.className = 'lock-notif';
-  row.style.animationDelay = (0.4 + i * 0.35) + 's';
-  row.innerHTML =
-    '<div class="call-avatar" style="background:' + call.bg + ';color:' + call.fg + ';">' + call.avatar + '</div>' +
-    '<div class="lock-notif-text"><b>' + call.name + '</b><span>Missed Call</span></div>' +
-    '<span class="lock-notif-time">now</span>';
-  lockNotifs.appendChild(row);
-});
-
 // Inside, after unlocking: the welcome notification. Tap it to dismiss it.
 const welcome = document.getElementById('welcome-notif');
 
@@ -205,10 +185,10 @@ setInterval(syncLockClock, 1000);
 // <audio> tags. Looping a silent <audio> tag (started inside a gesture) makes
 // iOS treat the page as media playback, so the Web Audio sounds come through.
 let silentLoop = null;
-let silentLoopStarted = Promise.resolve();
+let silentLoopStarted = Promise.resolve(true); // resolves true if allowed, false if blocked
 function keepIOSAudioAudible() {
   if (silentLoop) {
-    if (silentLoop.paused) silentLoop.play().catch(() => {});
+    if (silentLoop.paused) silentLoopStarted = silentLoop.play().then(() => true, () => false);
     return;
   }
   // half a second of silence as a tiny 8 kHz mono WAV
@@ -223,8 +203,8 @@ function keepIOSAudioAudible() {
   silentLoop.loop = true;
   silentLoop.setAttribute('playsinline', '');
   silentLoopStarted = silentLoop.play()
-    .then(() => dbg('silent loop playing (iPhone silent-switch fix)'))
-    .catch(err => dbg('silent loop BLOCKED: ' + (err && err.message || err)));
+    .then(() => { dbg('silent loop playing (iPhone silent-switch fix)'); return true; })
+    .catch(err => { dbg('silent loop BLOCKED: ' + (err && err.message || err)); return false; });
 }
 
 // if it couldn't start during the unlock, any later tap starts it
@@ -249,19 +229,33 @@ function unlockPhone() {
   unlocked = true;
   unlockAudio();
   lockScreen.classList.add('unlocked');
-  // iPhones only allow sound that starts inside the gesture itself, so if the
-  // sound is loaded, show the notification (and start its sound) right now
-  if (soundBuffers.notif) {
-    // wait (at most a quarter second) for the silent loop, so the iPhone has
-    // switched to media playback before the notification sound starts
-    const shortWait = new Promise(ok => setTimeout(ok, 250));
-    Promise.race([silentLoopStarted, shortWait]).then(showWelcome);
-    return;
-  }
-  // on a slow connection wait (briefly) for the sounds, so the notification
-  // and its sound still arrive together
-  const timeout = new Promise(ok => setTimeout(ok, 1500));
-  Promise.race([soundsReady, timeout]).then(showWelcome);
+  // iPhones don't count a slide (drag) as permission to play sound, only a
+  // tap. The silent loop tells us which it was: allowed -> show the welcome
+  // notification now; blocked -> hold it until the visitor's first tap, so
+  // the notification and its sound still arrive together.
+  const shortWait = new Promise(ok => setTimeout(() => ok(true), 400));
+  Promise.race([silentLoopStarted, shortWait]).then(allowed => {
+    if (allowed) {
+      // on a slow connection wait (briefly) for the sounds to finish loading
+      const timeout = new Promise(ok => setTimeout(ok, 1500));
+      Promise.race([soundsReady, timeout]).then(showWelcome);
+    } else {
+      dbg('slide did not allow sound (iPhone): welcome waits for first tap');
+      holdWelcomeUntilTap();
+    }
+  });
+}
+
+function holdWelcomeUntilTap() {
+  const onFirstTap = (e) => {
+    document.removeEventListener('touchend', onFirstTap, true);
+    document.removeEventListener('click', onFirstTap, true);
+    unlockAudio(e);
+    showWelcome();
+  };
+  // capture phase, so this runs before whatever was tapped
+  document.addEventListener('touchend', onFirstTap, true);
+  document.addEventListener('click', onFirstTap, true);
 }
 
 let dragStartX = 0;

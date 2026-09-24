@@ -417,27 +417,6 @@ body {
   to { transform: translateX(110%); opacity: 0; }
 }
 
-.call-avatar {
-  position: relative;
-  flex: none;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-}
-.call-dot {
-  width: 5px;
-  height: 5px;
-  margin-left: 1px;
-  align-self: flex-end;
-  margin-bottom: 9px;
-  border-radius: 50%;
-  background: #86bc25;
-}
 .notif-top {
   display: flex;
   align-items: center;
@@ -610,50 +589,4 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .lock-screen, .slider-knob.snap { transition: none; }
   .slider-text { animation: none; color: #cfcfcf; background: none; }
-}
-
-/* Missed calls listed on the lock screen */
-.lock-notifs {
-  position: relative;
-  margin: 10px 8px 0;
-  border-radius: 6px;
-  overflow: hidden;
-  background: rgba(20, 28, 32, 0.62);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
-}
-.lock-notif {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 9px;
-  color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-  opacity: 0;
-  animation: lock-notif-in 0.35s ease forwards;
-}
-.lock-notif:last-child { border-bottom: none; }
-.lock-notif .call-avatar {
-  width: 30px;
-  height: 30px;
-  font-size: 13px;
-}
-.lock-notif-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
-}
-.lock-notif-text b { font-size: 13px; }
-.lock-notif-text span { font-size: 12px; color: #ffb3b3; }
-.lock-notif-time {
-  align-self: flex-start;
-  font-size: 11px;
-  color: #ccc;
-}
-@keyframes lock-notif-in {
-  from { transform: translateY(-8px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lock-notif { animation: none; opacity: 1; }
 }
