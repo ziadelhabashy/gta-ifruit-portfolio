@@ -351,3 +351,18 @@ body {
 
 .icon-white { fill: #ffffff; }
 .icon-red { fill: #b70000; }
+
+/* Download CV button + links inside cards */
+.cv-btn {
+  display: inline-block;
+  margin-top: 10px;
+  background-color: #b70000;
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 2px;
+}
+.cv-btn:hover { background-color: #d40000; }
+.info-card a:not(.cv-btn) { color: #5cdb5c; }
