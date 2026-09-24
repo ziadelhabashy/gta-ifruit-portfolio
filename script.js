@@ -201,10 +201,40 @@ function syncLockClock() {
 syncLockClock();
 setInterval(syncLockClock, 1000);
 
+// iPhones mute Web Audio when the ring/silent switch is on silent, but not
+// <audio> tags. Looping a silent <audio> tag (started inside a gesture) makes
+// iOS treat the page as media playback, so the Web Audio sounds come through.
+let silentLoop = null;
+let silentLoopStarted = Promise.resolve();
+function keepIOSAudioAudible() {
+  if (silentLoop) {
+    if (silentLoop.paused) silentLoop.play().catch(() => {});
+    return;
+  }
+  // half a second of silence as a tiny 8 kHz mono WAV
+  const rate = 8000, samples = rate / 2, bytes = new ArrayBuffer(44 + samples * 2);
+  const v = new DataView(bytes);
+  const text = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  text(0, 'RIFF'); v.setUint32(4, 36 + samples * 2, true); text(8, 'WAVE');
+  text(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  text(36, 'data'); v.setUint32(40, samples * 2, true);
+  silentLoop = new Audio(URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' })));
+  silentLoop.loop = true;
+  silentLoop.setAttribute('playsinline', '');
+  silentLoopStarted = silentLoop.play()
+    .then(() => dbg('silent loop playing (iPhone silent-switch fix)'))
+    .catch(err => dbg('silent loop BLOCKED: ' + (err && err.message || err)));
+}
+
+// if it couldn't start during the unlock, any later tap starts it
+document.addEventListener('touchend', () => { if (unlocked) keepIOSAudioAudible(); }, { passive: true });
+
 // has to run inside the gesture itself, or phones keep audio blocked; older
 // iPhones also need something to actually play, so start a silent blip
 function unlockAudio(e) {
   dbg('gesture ' + (e && e.type || 'unlock') + ' | audio state=' + (audioCtx ? audioCtx.state : 'none'));
+  keepIOSAudioAudible();
   if (!audioCtx) return;
   if (audioCtx.state !== 'running') audioCtx.resume();
   const blip = audioCtx.createBufferSource();
@@ -222,7 +252,10 @@ function unlockPhone() {
   // iPhones only allow sound that starts inside the gesture itself, so if the
   // sound is loaded, show the notification (and start its sound) right now
   if (soundBuffers.notif) {
-    showWelcome();
+    // wait (at most a quarter second) for the silent loop, so the iPhone has
+    // switched to media playback before the notification sound starts
+    const shortWait = new Promise(ok => setTimeout(ok, 250));
+    Promise.race([silentLoopStarted, shortWait]).then(showWelcome);
     return;
   }
   // on a slow connection wait (briefly) for the sounds, so the notification
