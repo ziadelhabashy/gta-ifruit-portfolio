@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ziad El-Habashy | iFruit Portfolio</title>
-  <link rel="stylesheet" href="style.css?v=26">
+  <link rel="stylesheet" href="style.css?v=27">
 </head>
 <body>
 
@@ -61,8 +61,8 @@
         </div>
       </div>
 
-      <!-- Lock Screen: sliding to unlock lets the browser play the welcome sound -->
-      <div id="lock-screen" class="lock-screen" role="dialog" aria-label="Lock screen. Slide to unlock, or press Enter.">
+      <!-- Lock Screen: the unlock tap lets the browser play the welcome sound -->
+      <div id="lock-screen" class="lock-screen" role="dialog" aria-label="Lock screen. Tap to unlock, or press Enter.">
         <img class="lock-wallpaper" src="assets/lock-wallpaper.jpg" alt="" aria-hidden="true">
 
         <div class="lock-top">
@@ -73,12 +73,12 @@
 
 
         <div class="lock-bottom">
-          <div class="slider-track" id="slider-track">
+          <button class="slider-track" id="slider-track" type="button" aria-label="Tap to unlock">
             <div class="slider-knob" id="slider-knob">
               <svg width="26" height="18" viewBox="0 0 26 18" aria-hidden="true"><path d="M1 6h14V1l10 8-10 8v-5H1z" fill="#6d6d6d"/></svg>
             </div>
-            <span class="slider-text">slide to <b>iFruit</b></span>
-          </div>
+            <span class="slider-text">tap to <b>iFruit</b></span>
+          </button>
         </div>
       </div>
 
@@ -404,6 +404,6 @@
 
   </div> <!-- End Phone Frame -->
 
-  <script src="script.js?v=26"></script>
+  <script src="script.js?v=27"></script>
 </body>
 </html>

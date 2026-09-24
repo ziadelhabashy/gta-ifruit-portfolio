@@ -165,7 +165,7 @@ function showWelcome() {
 
 welcome.addEventListener('click', () => hideNotif(welcome));
 
-// Lock screen: drag the knob to the end of the track to unlock
+// Lock screen: tap the "tap to iFruit" bar to unlock
 const lockScreen = document.getElementById('lock-screen');
 const sliderTrack = document.getElementById('slider-track');
 const sliderKnob = document.getElementById('slider-knob');
@@ -229,10 +229,9 @@ function unlockPhone() {
   unlocked = true;
   unlockAudio();
   lockScreen.classList.add('unlocked');
-  // iPhones don't count a slide (drag) as permission to play sound, only a
-  // tap. The silent loop tells us which it was: allowed -> show the welcome
-  // notification now; blocked -> hold it until the visitor's first tap, so
-  // the notification and its sound still arrive together.
+  // Safety net: if the phone still didn't allow sound, the silent loop tells
+  // us, and the welcome notification waits for the visitor's next tap so the
+  // notification and its sound still arrive together.
   const shortWait = new Promise(ok => setTimeout(() => ok(true), 400));
   Promise.race([silentLoopStarted, shortWait]).then(allowed => {
     if (allowed) {
@@ -240,7 +239,7 @@ function unlockPhone() {
       const timeout = new Promise(ok => setTimeout(ok, 1500));
       Promise.race([soundsReady, timeout]).then(showWelcome);
     } else {
-      dbg('slide did not allow sound (iPhone): welcome waits for first tap');
+      dbg('sound not allowed yet: welcome waits for next tap');
       holdWelcomeUntilTap();
     }
   });
@@ -258,59 +257,28 @@ function holdWelcomeUntilTap() {
   document.addEventListener('click', onFirstTap, true);
 }
 
-let dragStartX = 0;
-let dragX = 0;
-let dragging = false;
-const maxDrag = () => sliderTrack.clientWidth - sliderKnob.offsetWidth - 6;
-
-sliderKnob.addEventListener('pointerdown', (e) => {
-  dragging = true;
-  dragStartX = e.clientX - dragX;
-  sliderKnob.classList.remove('snap');
-  sliderKnob.setPointerCapture(e.pointerId);
-});
-
-sliderKnob.addEventListener('pointermove', (e) => {
-  if (!dragging) return;
-  dragX = Math.max(0, Math.min(e.clientX - dragStartX, maxDrag()));
-  sliderKnob.style.transform = 'translateX(' + dragX + 'px)';
-});
-
-function endDrag(e) {
-  if (!dragging) return;
-  dragging = false;
-  // a very fast flick can skip the move events, so measure where it ended
-  if (e && e.type === 'pointerup') {
-    dragX = Math.max(dragX, Math.min(e.clientX - dragStartX, maxDrag()));
-  }
-  if (dragX >= maxDrag() * 0.9) {
-    sliderKnob.style.transform = 'translateX(' + maxDrag() + 'px)';
-    unlockPhone();
-  } else {
-    // not far enough: spring back like the real thing
-    dragX = 0;
-    sliderKnob.classList.add('snap');
-    sliderKnob.style.transform = 'translateX(0)';
-  }
+// Tap the "tap to iFruit" bar to unlock. A tap (unlike a slide) counts as
+// permission to play sound on iPhones too, so the welcome notification and its
+// sound arrive together everywhere. The arrow glides across as a small flourish.
+function tapUnlock(e) {
+  if (unlocked || sliderTrack.classList.contains('going')) return;
+  unlockAudio(e); // inside the tap itself, so phones allow the sound
+  sliderTrack.classList.add('going');
+  const travel = sliderTrack.clientWidth - sliderKnob.offsetWidth - 6;
+  sliderKnob.style.transform = 'translateX(' + travel + 'px)';
+  setTimeout(unlockPhone, 280);
 }
-sliderKnob.addEventListener('pointerup', endDrag);
-sliderKnob.addEventListener('pointercancel', endDrag);
-// Phones differ on which part of a gesture allows audio (iPhones want
-// touchend, which can fire before or after pointerup), so switch it on at
-// every stage of the slide; unlockAudio is harmless to repeat
-['pointerdown', 'touchstart', 'touchend', 'pointerup'].forEach(type => {
-  sliderKnob.addEventListener(type, unlockAudio, { passive: true });
-});
+sliderTrack.addEventListener('click', tapUnlock);
 
-// keyboard: Enter or Space unlocks
-lockScreen.tabIndex = 0;
+// keyboard: Enter or Space anywhere on the lock screen unlocks too
 lockScreen.addEventListener('keydown', (e) => {
+  if (e.target === sliderTrack) return; // the button handles its own keys
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault();
-    unlockPhone();
+    tapUnlock(e);
   }
 });
-lockScreen.focus();
+sliderTrack.focus();
 
 function openApp(pageId) {
   const pages = document.querySelectorAll('.app-page');

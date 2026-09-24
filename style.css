@@ -457,7 +457,7 @@ body {
   .notif.show, .notif.leaving { animation: none; }
 }
 
-/* Lock screen - classic "slide to unlock" style; the slide gesture is what
+/* Lock screen - classic iPhone lock screen style; the unlock tap is what
    lets the browser play the welcome sound */
 .lock-screen {
   position: absolute;
@@ -541,6 +541,11 @@ body {
   position: relative;
   flex: 1;
   height: 44px;
+  padding: 0;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   border-radius: 10px;
   background: linear-gradient(180deg, #2a2a2a, #474747);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.25);
@@ -559,11 +564,11 @@ body {
   border-radius: 8px;
   background: linear-gradient(180deg, #ffffff, #cfcfcf);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-  cursor: grab;
-  touch-action: none;
+  transition: transform 0.28s ease-in;
 }
-.slider-knob:active { cursor: grabbing; }
-.slider-knob.snap { transition: transform 0.25s ease; }
+.slider-track:focus { outline: none; }
+.slider-track:focus-visible { box-shadow: 0 0 0 2px #5cdb5c; }
+.slider-track:active .slider-knob { filter: brightness(0.92); }
 .slider-text {
   position: absolute;
   inset: 0 0 0 60px;
@@ -587,6 +592,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lock-screen, .slider-knob.snap { transition: none; }
+  .lock-screen, .slider-knob { transition: none; }
   .slider-text { animation: none; color: #cfcfcf; background: none; }
 }
