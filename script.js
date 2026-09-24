@@ -53,26 +53,35 @@ function toggleSound() {
 
 renderSoundToggle();
 
-// Welcome text notification on page open. Browsers block sound until the
-// visitor interacts, so if autoplay is refused the sound plays on the first
-// tap/click while the notification is still showing.
+// Welcome text notification on page open, always together with its sound.
+// Browsers block sound until the visitor interacts, so if autoplay is refused
+// the notification waits and pops in with the sound on the first tap/key.
 const welcome = document.getElementById('welcome-notif');
 let welcomeTimer;
+let welcomeShown = false;
 
 function hideWelcome() {
   welcome.classList.remove('show');
   clearTimeout(welcomeTimer);
 }
 
-function showWelcome() {
+function revealWelcome() {
+  if (welcomeShown) return;
+  welcomeShown = true;
   welcome.classList.add('show');
   welcomeTimer = setTimeout(hideWelcome, 9000);
-  playTap().catch(() => {
-    const retry = () => {
-      if (welcome.classList.contains('show')) playTap().catch(() => {});
+}
+
+function showWelcome() {
+  playTap().then(revealWelcome).catch(() => {
+    const onFirstInput = () => {
+      document.removeEventListener('pointerdown', onFirstInput);
+      document.removeEventListener('keydown', onFirstInput);
+      // show even if the sound still fails, so the message is never lost
+      playTap().then(revealWelcome, revealWelcome);
     };
-    document.addEventListener('pointerdown', retry, { once: true });
-    document.addEventListener('keydown', retry, { once: true });
+    document.addEventListener('pointerdown', onFirstInput);
+    document.addEventListener('keydown', onFirstInput);
   });
 }
 
