@@ -380,12 +380,19 @@ body {
 .sound-toggle.muted .sound-mute { display: inline; }
 
 /* Welcome notification - GTA Online invite style */
-.notif {
+.notif-stack {
   position: absolute;
   top: 28px;
   left: 10px;
   right: 10px;
   z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+.notif {
+  display: none;
   background-color: rgba(60, 60, 60, 0.92);
   border-radius: 2px;
   padding: 7px 8px 8px;
@@ -393,15 +400,63 @@ body {
   color: #fff;
   font-family: Arial, Helvetica, sans-serif;
   cursor: pointer;
-  transform: translateY(-140%);
-  opacity: 0;
-  transition: transform 0.35s ease, opacity 0.35s ease;
-  pointer-events: none;
+  pointer-events: auto;
 }
 .notif.show {
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
+  display: block;
+  animation: notif-in 0.35s ease;
+}
+.notif.leaving {
+  animation: notif-out 0.3s ease forwards;
+}
+@keyframes notif-in {
+  from { transform: translateY(-30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes notif-out {
+  to { transform: translateX(110%); opacity: 0; }
+}
+
+/* Missed call notifications */
+.notif-call.show {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+}
+.call-avatar {
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.call-dot {
+  width: 5px;
+  height: 5px;
+  margin-left: 1px;
+  align-self: flex-end;
+  margin-bottom: 9px;
+  border-radius: 50%;
+  background: #86bc25;
+}
+.call-type {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #ff8a8a;
+}
+.call-time {
+  flex: none;
+  align-self: flex-start;
+  font-size: 11px;
+  color: #bbb;
 }
 .notif-top {
   display: flex;
@@ -440,59 +495,192 @@ body {
   color: #f2f2f2;
 }
 @media (prefers-reduced-motion: reduce) {
-  .notif { transition: none; }
+  .notif.show, .notif.leaving { animation: none; }
 }
 
-/* Lock screen - the unlock tap lets the browser play the welcome sound */
+/* Lock screen - classic "slide to unlock" style; the slide gesture is what
+   lets the browser play the welcome sound */
 .lock-screen {
   position: absolute;
   inset: 0;
   z-index: 60;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  width: 100%;
-  border: none;
+  overflow: hidden;
   border-radius: 6px;
-  background: radial-gradient(circle at 50% 35%, #1f4d14 0%, #0b1a07 55%, #000 100%);
-  color: #fff;
-  font-family: Arial, Helvetica, sans-serif;
-  cursor: pointer;
+  background: #cfe6e4;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
   transition: transform 0.45s ease, opacity 0.45s ease;
 }
-.lock-screen:focus {
-  outline: none;
-}
+.lock-screen:focus { outline: none; }
 .lock-screen.unlocked {
   transform: translateY(-100%);
   opacity: 0;
   pointer-events: none;
 }
-.lock-time {
-  font-size: 58px;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-.lock-date {
-  font-size: 14px;
-  color: #cfe8c6;
-}
-.lock-hint {
-  margin-top: 140px;
-  font-size: 13px;
-  color: #5cdb5c;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  animation: lock-pulse 1.6s ease-in-out infinite;
-}
-@keyframes lock-pulse {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lock-screen { transition: none; }
-  .lock-hint { animation: none; }
+.lock-wallpaper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
+/* glassy top bar with clock */
+.lock-top {
+  position: relative;
+  padding: 3px 8px 8px;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(40, 55, 60, 0.72), rgba(20, 30, 35, 0.55));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+}
+.lock-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: bold;
+  opacity: 0.9;
+}
+.lock-battery {
+  width: 20px;
+  height: 9px;
+  border: 1.5px solid #fff;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #fff 80%, transparent 80%);
+}
+.lock-time {
+  font-size: 54px;
+  font-weight: 200;
+  line-height: 1.05;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.lock-date {
+  font-size: 13px;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* glassy bottom bar with slider */
+.lock-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 10px 14px;
+  background: linear-gradient(180deg, rgba(40, 55, 60, 0.55), rgba(20, 30, 35, 0.72));
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+.slider-track {
+  position: relative;
+  flex: 1;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #2a2a2a, #474747);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.25);
+  touch-action: none;
+}
+.slider-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  z-index: 2;
+  width: 56px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff, #cfcfcf);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  cursor: grab;
+  touch-action: none;
+}
+.slider-knob:active { cursor: grabbing; }
+.slider-knob.snap { transition: transform 0.25s ease; }
+.slider-text {
+  position: absolute;
+  inset: 0 0 0 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  color: transparent;
+  /* the classic shimmer sweeping across the text */
+  background: linear-gradient(90deg, #7a7a7a 0%, #7a7a7a 40%, #ffffff 50%, #7a7a7a 60%, #7a7a7a 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: slider-shimmer 2.4s linear infinite;
+  pointer-events: none;
+}
+.slider-text b { margin-left: 5px; }
+@keyframes slider-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -50% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lock-screen, .slider-knob.snap { transition: none; }
+  .slider-text { animation: none; color: #cfcfcf; background: none; }
+}
+
+/* Missed calls listed on the lock screen (?calls=lock) */
+.lock-notifs {
+  position: relative;
+  margin: 10px 8px 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(20, 28, 32, 0.62);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+.lock-notifs[hidden] { display: none; }
+.lock-notif {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  opacity: 0;
+  animation: lock-notif-in 0.35s ease forwards;
+}
+.lock-notif:last-child { border-bottom: none; }
+.lock-notif .call-avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 13px;
+}
+.lock-notif-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.lock-notif-text b { font-size: 13px; }
+.lock-notif-text span { font-size: 12px; color: #ffb3b3; }
+.lock-notif-time {
+  align-self: flex-start;
+  font-size: 11px;
+  color: #ccc;
+}
+@keyframes lock-notif-in {
+  from { transform: translateY(-8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lock-notif { animation: none; opacity: 1; }
+}
+
+/* Google "G" avatar */
+.call-avatar-google {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 17px;
+}

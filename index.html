@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ziad El-Habashy | iFruit Portfolio</title>
-  <link rel="stylesheet" href="style.css?v=12">
+  <link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
 
@@ -61,27 +61,86 @@
         </div>
       </div>
 
-      <!-- Lock Screen: the unlock tap lets the browser play the welcome sound -->
-      <button id="lock-screen" class="lock-screen" type="button" aria-label="Tap to unlock">
-        <span class="lock-time" id="lock-time">11:59</span>
-        <span class="lock-date" id="lock-date"></span>
-        <span class="lock-hint">Tap to unlock</span>
-      </button>
+      <!-- Lock Screen: sliding to unlock lets the browser play the welcome sound -->
+      <div id="lock-screen" class="lock-screen" role="dialog" aria-label="Lock screen. Slide to unlock, or press Enter.">
+        <img class="lock-wallpaper" src="assets/lock-wallpaper.jpg" alt="" aria-hidden="true">
 
-      <!-- Welcome Text Notification -->
-      <div id="welcome-notif" class="notif" role="status" aria-live="polite">
-        <div class="notif-top">
-          <img class="notif-avatar" src="assets/ziad.webp" alt="Ziad El-Habashy">
-          <div class="notif-head">
-            <div class="notif-name">Ziad El-Habashy</div>
-            <div class="notif-type">Welcome - NEW</div>
-          </div>
-          <svg class="notif-arrow" width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M14 4l8 8-8 8v-5C8 15 4.5 17 2 21c1-6 4.5-11 12-12V4z"/></svg>
+        <div class="lock-top">
+          <div class="lock-status"><span>iFruit</span><span class="lock-battery"></span></div>
+          <div class="lock-time" id="lock-time">2:50</div>
+          <div class="lock-date" id="lock-date"></div>
         </div>
-        <div class="notif-msg">
-          1 Visitor<br>
-          Ziad's Portfolio, 0m<br>
-          Alright, welcome to my portfolio. Tap around to check out my experience, projects and certificates, and grab my CV while you're here.
+
+        <!-- Missed calls list (only with ?calls=lock) -->
+        <div class="lock-notifs" id="lock-notifs" hidden></div>
+
+        <div class="lock-bottom">
+          <div class="slider-track" id="slider-track">
+            <div class="slider-knob" id="slider-knob">
+              <svg width="26" height="18" viewBox="0 0 26 18" aria-hidden="true"><path d="M1 6h14V1l10 8-10 8v-5H1z" fill="#6d6d6d"/></svg>
+            </div>
+            <span class="slider-text">slide to <b>iFruit</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications: welcome text, then missed calls -->
+      <div class="notif-stack" id="notif-stack">
+        <!-- Welcome Text Notification -->
+        <div id="welcome-notif" class="notif" role="status" aria-live="polite">
+          <div class="notif-top">
+            <img class="notif-avatar" src="assets/ziad.webp" alt="Ziad El-Habashy">
+            <div class="notif-head">
+              <div class="notif-name">Ziad El-Habashy</div>
+              <div class="notif-type">Welcome - NEW</div>
+            </div>
+            <svg class="notif-arrow" width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M14 4l8 8-8 8v-5C8 15 4.5 17 2 21c1-6 4.5-11 12-12V4z"/></svg>
+          </div>
+          <div class="notif-msg">
+            1 Visitor<br>
+            Ziad's Portfolio, 0m<br>
+            Alright, welcome to my portfolio. Tap around to check out my experience, projects and certificates, and grab my CV while you're here.
+          </div>
+        </div>
+        <div class="notif notif-call" role="status">
+          <div class="call-avatar" style="background:#009999;color:#fff;">S</div>
+          <div class="notif-head">
+            <div class="notif-name">Siemens</div>
+            <div class="call-type"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" fill="#ff5a5a"/></svg> Missed Call</div>
+          </div>
+          <span class="call-time">now</span>
+        </div>
+        <div class="notif notif-call" role="status">
+          <div class="call-avatar" style="background:#82e600;color:#1b1b1b;">V</div>
+          <div class="notif-head">
+            <div class="notif-name">Valeo</div>
+            <div class="call-type"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" fill="#ff5a5a"/></svg> Missed Call</div>
+          </div>
+          <span class="call-time">now</span>
+        </div>
+        <div class="notif notif-call" role="status">
+          <div class="call-avatar" style="background:#d04a02;color:#fff;">pwc</div>
+          <div class="notif-head">
+            <div class="notif-name">PwC</div>
+            <div class="call-type"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" fill="#ff5a5a"/></svg> Missed Call</div>
+          </div>
+          <span class="call-time">now</span>
+        </div>
+        <div class="notif notif-call" role="status">
+          <div class="call-avatar" style="background:#000;color:#fff;">D<span class="call-dot"></span></div>
+          <div class="notif-head">
+            <div class="notif-name">Deloitte</div>
+            <div class="call-type"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" fill="#ff5a5a"/></svg> Missed Call</div>
+          </div>
+          <span class="call-time">now</span>
+        </div>
+        <div class="notif notif-call" id="call-google" role="status">
+          <div class="call-avatar call-avatar-google" style="background:#fff;color:#4285f4;">G</div>
+          <div class="notif-head">
+            <div class="notif-name">Google</div>
+            <div class="call-type"><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" fill="#ff5a5a"/></svg> Missed Call</div>
+          </div>
+          <span class="call-time">now</span>
         </div>
       </div>
 
@@ -387,6 +446,6 @@
 
   </div> <!-- End Phone Frame -->
 
-  <script src="script.js?v=12"></script>
+  <script src="script.js?v=19"></script>
 </body>
 </html>

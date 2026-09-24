@@ -90,50 +90,159 @@ document.querySelectorAll('.tile[data-title], .screen-btn, .hw-btn[onclick]').fo
   el.addEventListener('pointerdown', () => playSound('touch'));
 });
 
-// Welcome text notification, shown together with its sound on unlock
+// Notifications on unlock: the welcome text first, then missed calls slide in
+// one after another underneath. Tap any of them to dismiss it.
 const welcome = document.getElementById('welcome-notif');
-let welcomeTimer;
+const callNotifs = [...document.querySelectorAll('.notif-call:not(#call-google)')];
+const googleCall = document.getElementById('call-google');
+const notifTimers = [];
 
-function hideWelcome() {
-  welcome.classList.remove('show');
-  clearTimeout(welcomeTimer);
+function showNotif(el) {
+  el.classList.remove('leaving');
+  el.classList.add('show');
+}
+
+function hideNotif(el) {
+  if (!el.classList.contains('show') || el.classList.contains('leaving')) return;
+  el.classList.add('leaving');
+  setTimeout(() => el.classList.remove('show', 'leaving'), 300);
+}
+
+// Two layouts for the missed calls, picked by the link:
+//   default        -> calls pop up after unlocking, under the welcome text
+//   ?calls=lock    -> calls are already listed on the lock screen
+const callsOnLock = new URLSearchParams(location.search).get('calls') === 'lock';
+
+if (callsOnLock) {
+  const list = document.getElementById('lock-notifs');
+  callNotifs.forEach((el, i) => {
+    const row = document.createElement('div');
+    row.className = 'lock-notif';
+    row.style.animationDelay = (0.4 + i * 0.35) + 's';
+    row.innerHTML =
+      el.querySelector('.call-avatar').outerHTML +
+      '<div class="lock-notif-text"><b>' + el.querySelector('.notif-name').textContent +
+      '</b><span>Missed Call</span></div><span class="lock-notif-time">now</span>';
+    list.appendChild(row);
+  });
+  list.hidden = false;
 }
 
 function showWelcome() {
-  welcome.classList.add('show');
-  welcomeTimer = setTimeout(hideWelcome, 9000);
+  showNotif(welcome);
   playSound('notif');
-}
-
-welcome.addEventListener('click', hideWelcome);
-
-// Lock screen
-const lockScreen = document.getElementById('lock-screen');
-document.getElementById('lock-date').textContent =
-  new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-
-function syncLockTime() {
-  document.getElementById('lock-time').textContent = document.getElementById('clock').textContent;
-}
-syncLockTime();
-setInterval(syncLockTime, 1000);
-
-lockScreen.addEventListener('click', () => {
-  // must happen inside the tap itself, or phones keep audio blocked; older
-  // iPhones also need something to actually play, so start a silent blip
-  if (audioCtx) {
-    if (audioCtx.state !== 'running') audioCtx.resume();
-    const blip = audioCtx.createBufferSource();
-    blip.buffer = audioCtx.createBuffer(1, 1, 22050);
-    blip.connect(audioCtx.destination);
-    blip.start(0);
+  if (callsOnLock) {
+    // the other calls are on the lock screen; inside, only Google calls
+    notifTimers.push(setTimeout(() => {
+      showNotif(googleCall);
+      playSound('notif');
+    }, 1200));
+    notifTimers.push(setTimeout(() => hideNotif(welcome), 9000));
+    notifTimers.push(setTimeout(() => hideNotif(googleCall), 9150));
+    return;
   }
+  callNotifs.forEach((el, i) => {
+    notifTimers.push(setTimeout(() => {
+      showNotif(el);
+      playSound('notif');
+    }, 1200 + i * 900));
+  });
+  // clear them all a while after the last call arrives, oldest first
+  const clearAt = 1200 + callNotifs.length * 900 + 6000;
+  [welcome, ...callNotifs].forEach((el, i) => {
+    notifTimers.push(setTimeout(() => hideNotif(el), clearAt + i * 150));
+  });
+}
+
+[welcome, googleCall, ...callNotifs].forEach(el => el.addEventListener('click', () => hideNotif(el)));
+
+// Lock screen: drag the knob to the end of the track to unlock
+const lockScreen = document.getElementById('lock-screen');
+const sliderTrack = document.getElementById('slider-track');
+const sliderKnob = document.getElementById('slider-knob');
+
+function syncLockClock() {
+  const now = new Date();
+  const h = now.getHours() % 12 || 12;
+  document.getElementById('lock-time').textContent = h + ':' + String(now.getMinutes()).padStart(2, '0');
+  const weekday = now.toLocaleDateString('en-GB', { weekday: 'long' });
+  const dayMonth = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+  document.getElementById('lock-date').textContent = weekday + ', ' + dayMonth;
+}
+syncLockClock();
+setInterval(syncLockClock, 1000);
+
+// has to run inside the gesture itself, or phones keep audio blocked; older
+// iPhones also need something to actually play, so start a silent blip
+function unlockAudio() {
+  if (!audioCtx) return;
+  if (audioCtx.state !== 'running') audioCtx.resume();
+  const blip = audioCtx.createBufferSource();
+  blip.buffer = audioCtx.createBuffer(1, 1, 22050);
+  blip.connect(audioCtx.destination);
+  blip.start(0);
+}
+
+let unlocked = false;
+function unlockPhone() {
+  if (unlocked) return;
+  unlocked = true;
+  unlockAudio();
   lockScreen.classList.add('unlocked');
   // on a slow connection wait (briefly) for the sounds, so the notification
   // and its sound still arrive together
   const timeout = new Promise(ok => setTimeout(ok, 1500));
   Promise.race([soundsReady, timeout]).then(showWelcome);
-}, { once: true });
+}
+
+let dragStartX = 0;
+let dragX = 0;
+let dragging = false;
+const maxDrag = () => sliderTrack.clientWidth - sliderKnob.offsetWidth - 6;
+
+sliderKnob.addEventListener('pointerdown', (e) => {
+  dragging = true;
+  dragStartX = e.clientX - dragX;
+  sliderKnob.classList.remove('snap');
+  sliderKnob.setPointerCapture(e.pointerId);
+});
+
+sliderKnob.addEventListener('pointermove', (e) => {
+  if (!dragging) return;
+  dragX = Math.max(0, Math.min(e.clientX - dragStartX, maxDrag()));
+  sliderKnob.style.transform = 'translateX(' + dragX + 'px)';
+});
+
+function endDrag(e) {
+  if (!dragging) return;
+  dragging = false;
+  // a very fast flick can skip the move events, so measure where it ended
+  if (e && e.type === 'pointerup') {
+    dragX = Math.max(dragX, Math.min(e.clientX - dragStartX, maxDrag()));
+  }
+  if (dragX >= maxDrag() * 0.9) {
+    sliderKnob.style.transform = 'translateX(' + maxDrag() + 'px)';
+    unlockPhone();
+  } else {
+    // not far enough: spring back like the real thing
+    dragX = 0;
+    sliderKnob.classList.add('snap');
+    sliderKnob.style.transform = 'translateX(0)';
+  }
+}
+sliderKnob.addEventListener('pointerup', endDrag);
+sliderKnob.addEventListener('pointercancel', endDrag);
+// iPhones count touchend (not pointerup) as the gesture that allows audio
+sliderKnob.addEventListener('touchend', () => { if (unlocked) unlockAudio(); });
+
+// keyboard: Enter or Space unlocks
+lockScreen.tabIndex = 0;
+lockScreen.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    unlockPhone();
+  }
+});
 lockScreen.focus();
 
 function openApp(pageId) {
