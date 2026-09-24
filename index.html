@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ziad El-Habashy | iFruit Portfolio</title>
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 
@@ -60,6 +60,13 @@
           <span id="clock">11:59</span>
         </div>
       </div>
+
+      <!-- Lock Screen: the unlock tap lets the browser play the welcome sound -->
+      <button id="lock-screen" class="lock-screen" type="button" aria-label="Tap to unlock">
+        <span class="lock-time" id="lock-time">11:59</span>
+        <span class="lock-date" id="lock-date"></span>
+        <span class="lock-hint">Tap to unlock</span>
+      </button>
 
       <!-- Welcome Text Notification -->
       <div id="welcome-notif" class="notif" role="status" aria-live="polite">
@@ -380,6 +387,6 @@
 
   </div> <!-- End Phone Frame -->
 
-  <script src="script.js?v=6"></script>
+  <script src="script.js?v=8"></script>
 </body>
 </html>

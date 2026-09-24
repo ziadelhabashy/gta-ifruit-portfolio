@@ -53,9 +53,9 @@ function toggleSound() {
 
 renderSoundToggle();
 
-// Welcome text notification, shown as soon as the page opens. Browsers block
-// sound until the visitor interacts, so if autoplay is refused the sound plays
-// on the first tap/key while the notification is still on screen.
+// Welcome text notification, shown together with its sound when the visitor
+// unlocks the phone. Browsers only allow sound after a tap, so the unlock tap
+// is what makes the sound play at the same moment as the notification.
 const welcome = document.getElementById('welcome-notif');
 let welcomeTimer;
 
@@ -67,19 +67,27 @@ function hideWelcome() {
 function showWelcome() {
   welcome.classList.add('show');
   welcomeTimer = setTimeout(hideWelcome, 9000);
-  playTap().catch(() => {
-    const onFirstInput = () => {
-      document.removeEventListener('pointerdown', onFirstInput);
-      document.removeEventListener('keydown', onFirstInput);
-      if (welcome.classList.contains('show')) playTap().catch(() => {});
-    };
-    document.addEventListener('pointerdown', onFirstInput);
-    document.addEventListener('keydown', onFirstInput);
-  });
+  playTap().catch(() => {});
 }
 
 welcome.addEventListener('click', hideWelcome);
-setTimeout(showWelcome, 600);
+
+// Lock screen
+const lockScreen = document.getElementById('lock-screen');
+document.getElementById('lock-date').textContent =
+  new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+
+function syncLockTime() {
+  document.getElementById('lock-time').textContent = document.getElementById('clock').textContent;
+}
+syncLockTime();
+setInterval(syncLockTime, 1000);
+
+lockScreen.addEventListener('click', () => {
+  lockScreen.classList.add('unlocked');
+  showWelcome();
+}, { once: true });
+lockScreen.focus();
 
 function openApp(pageId) {
   const pages = document.querySelectorAll('.app-page');

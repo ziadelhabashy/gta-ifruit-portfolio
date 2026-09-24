@@ -442,3 +442,57 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .notif { transition: none; }
 }
+
+/* Lock screen - the unlock tap lets the browser play the welcome sound */
+.lock-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  background: radial-gradient(circle at 50% 35%, #1f4d14 0%, #0b1a07 55%, #000 100%);
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  cursor: pointer;
+  transition: transform 0.45s ease, opacity 0.45s ease;
+}
+.lock-screen:focus {
+  outline: none;
+}
+.lock-screen.unlocked {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+.lock-time {
+  font-size: 58px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.lock-date {
+  font-size: 14px;
+  color: #cfe8c6;
+}
+.lock-hint {
+  margin-top: 140px;
+  font-size: 13px;
+  color: #5cdb5c;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: lock-pulse 1.6s ease-in-out infinite;
+}
+@keyframes lock-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lock-screen { transition: none; }
+  .lock-hint { animation: none; }
+}
+
