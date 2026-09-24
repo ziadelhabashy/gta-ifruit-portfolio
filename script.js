@@ -66,7 +66,7 @@ function hideWelcome() {
 
 function showWelcome() {
   welcome.classList.add('show');
-  welcomeTimer = setTimeout(hideWelcome, 6000);
+  welcomeTimer = setTimeout(hideWelcome, 9000);
   playTap().catch(() => {
     const retry = () => {
       if (welcome.classList.contains('show')) playTap().catch(() => {});

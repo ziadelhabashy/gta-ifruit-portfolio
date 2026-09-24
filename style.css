@@ -379,22 +379,19 @@ body {
 .sound-toggle.muted .sound-waves { display: none; }
 .sound-toggle.muted .sound-mute { display: inline; }
 
-/* Welcome text notification */
+/* Welcome notification - GTA Online invite style */
 .notif {
   position: absolute;
   top: 28px;
   left: 10px;
   right: 10px;
   z-index: 50;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  background-color: #1a1a1a;
-  border: 1px solid #48b02c;
-  border-radius: 8px;
-  padding: 9px 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+  background-color: rgba(60, 60, 60, 0.92);
+  border-radius: 2px;
+  padding: 7px 8px 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7);
   color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
   cursor: pointer;
   transform: translateY(-140%);
   opacity: 0;
@@ -406,31 +403,41 @@ body {
   opacity: 1;
   pointer-events: auto;
 }
-.notif-avatar {
-  flex: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background-color: #b70000;
+.notif-top {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 13px;
-}
-.notif-body { min-width: 0; }
-.notif-head {
-  display: flex;
-  justify-content: space-between;
   gap: 8px;
-  font-size: 12px;
+  margin-bottom: 6px;
 }
-.notif-name { font-weight: bold; }
-.notif-time { color: #888; }
-.notif-msg {
-  font-size: 12px;
-  color: #ddd;
+.notif-avatar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  object-position: 50% 22%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.notif-head {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+}
+.notif-name {
+  font-size: 15px;
+}
+.notif-type {
+  font-size: 13px;
+  color: #e6e6e6;
+}
+.notif-arrow {
+  flex: none;
+  align-self: flex-start;
   margin-top: 2px;
+}
+.notif-msg {
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: #f2f2f2;
 }
 @media (prefers-reduced-motion: reduce) {
   .notif { transition: none; }
